@@ -50,6 +50,7 @@ public class NegikoController : MonoBehaviour
 
         float acceleratedZ = moveDirection.z + (accelerationZ * Time.deltaTime);
         moveDirection.z = Mathf.Clamp(acceleratedZ, 0, speed_Z);
+        //Clamp``ã≤Ç›çûÇﬁ(SpeedZç≈çÇë¨Ç…Ç»Ç¡ÇΩÇÁ)
 
         float rationX = (targetLane * LaneWidth - transform.position.x)/LaneWidth;
         moveDirection.x = rationX * speed_X;
@@ -93,7 +94,7 @@ public class NegikoController : MonoBehaviour
         {
             moveDirection.y = speed_Jump;
 
-            animator.SetTrigger("Jump");
+            animator.SetTrigger("jump");
         }
     }
 }
