@@ -24,6 +24,34 @@ public class NegikoController : MonoBehaviour
     public float speed_Jump;
     public float accelerationZ;
 
+    // 基本Hp
+    const int DefaultLife = 3;
+
+    const float StunDirection = 0.5f;
+
+    // ゲーム中ライフ
+    int life = DefaultLife;
+
+    float recoverTime = 0.0f;
+
+    /// <summary>
+    /// ライフ取得用関数
+    /// </summary>
+    /// <returns>ゲーム中ライフ</returns>
+    public int Life()
+    {
+        return life;
+    }
+
+    /// <summary>
+    /// 気絶判定
+    /// </summary>
+    /// <returns></returns>
+    private bool IsStun()
+    {
+        return recoverTime > 0.0f || life <= 0;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -35,7 +63,7 @@ public class NegikoController : MonoBehaviour
     void Update()
     {
         // デバッグ用キー入力
-        if(Input.GetKeyDown("left"))
+        if (Input.GetKeyDown("left"))
         {
             MoveLeftLane();
         }
@@ -48,13 +76,23 @@ public class NegikoController : MonoBehaviour
             Jump();
         }
 
-        float acceleratedZ = moveDirection.z + (accelerationZ * Time.deltaTime);
-        moveDirection.z = Mathf.Clamp(acceleratedZ, 0, speed_Z);
-        //Clamp``挟み込む(SpeedZ最高速になったら)
+        // スタン判定
+        if (IsStun())
+        {
+            // 動きを止め気絶状態からの復帰カウントを進める
+            moveDirection.x = 0.0f;
+            moveDirection.z = 0.0f;
+            recoverTime -= Time.deltaTime;
+        }
+        else
+        {
+            float acceleratedZ = moveDirection.z + (accelerationZ * Time.deltaTime);
+            moveDirection.z = Mathf.Clamp(acceleratedZ, 0, speed_Z);
+            //Clamp``挟み込む(SpeedZ最高速になったら)
 
-        float rationX = (targetLane * LaneWidth - transform.position.x)/LaneWidth;
-        moveDirection.x = rationX * speed_X;
-
+            float rationX = (targetLane * LaneWidth - transform.position.x) / LaneWidth;
+            moveDirection.x = rationX * speed_X;
+        }
         // 重力分の力を毎フレーム追加
         moveDirection.y -= gravity * Time.deltaTime;
 
@@ -64,13 +102,17 @@ public class NegikoController : MonoBehaviour
 
         // 移動速度が0以上なら走っているフラグをtrueに
         animator.SetBool("run", moveDirection.z > 0.0f);
-        
+
     }
     /// <summary>
     /// 左レーンに移動
     /// </summary>
     public void MoveLeftLane()
     {
+        if(IsStun())
+        {
+            return;
+        }
         if(controller.isGrounded&&targetLane>MinLane)
         {
             targetLane--;
@@ -82,19 +124,56 @@ public class NegikoController : MonoBehaviour
     /// </summary>
     public void MoveRigntLane()
     {
+        if (IsStun())
+        {
+            return;
+        }
+
         if (controller.isGrounded && targetLane < MaxLane)
         {
             targetLane++;
         }
     }
 
+    /// <summary>
+    /// ジャンプ処理
+    /// </summary>
     public void Jump()
     {
-        if(controller.isGrounded)
+        if (IsStun())
+        {
+            return;
+        }
+
+        if (controller.isGrounded)
         {
             moveDirection.y = speed_Jump;
 
             animator.SetTrigger("jump");
+        }
+    }
+
+    /// <summary>
+    /// CharacterControllerに衝突判定が生じたとき処理
+    /// </summary>
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (IsStun())
+        {
+            return;
+        }
+
+        if(hit.gameObject.tag=="Robo")
+        {
+            // ライフを減らして気絶状態に以降
+            life--;
+            recoverTime = StunDirection;
+
+            // ダメージトリガーを設定
+            animator.SetTrigger("damage");
+
+            // ヒットしたオブジェクトの削除
+            Destroy(hit.gameObject);
         }
     }
 }
