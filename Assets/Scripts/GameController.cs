@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -18,11 +19,32 @@ public class GameController : MonoBehaviour
         int score = CalcScore();
         scoreText.text = "SCORE : " + score + "m";
 
+        // ライフパネルの更新
         lifePanel.UpdateLife(negiko.Life());
+
+        // ゲームオーバー処理
+        if(negiko.Life() <= 0)
+        {
+            //これ以降のupdateは止める
+            enabled = false;
+
+            if(PlayerPrefs.GetInt("HightScore")<score)
+            {
+                PlayerPrefs.SetInt("HightScore", score);
+            }
+
+            // 2秒後にRetrurnTitleを呼ぶ
+            Invoke("ReturnToTitle", 2.0f);
+        }
     }
 
     int CalcScore()
     {
         return (int)negiko.transform.position.z;
+    }
+
+    private void ReturnToTitle()
+    {
+        SceneManager.LoadScene("Title");
     }
 }
