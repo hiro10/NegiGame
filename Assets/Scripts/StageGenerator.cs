@@ -9,9 +9,10 @@ public class StageGenerator : MonoBehaviour
 {
     const int StageClipSize = 30;
 
+    // 現在生成済みの先頭のチップindex
     int currentClipIndex;
-    // ターゲットキャラクターの指定
-    public Transform character;
+    // ターゲットキャラクターの指定(Playerの位置)
+    public Transform player;
     // ステージチッププレハブ配列
     public GameObject[] stageChips;
     // 自動生成開始インデックス
@@ -28,13 +29,12 @@ public class StageGenerator : MonoBehaviour
     {
         currentClipIndex = startChipIndex - 1;
         UpdateStage(preInstantiate);
-        
     }
 
     void Update()
     {
         // キャラクターの位置から現在のステージチップのインデックスの計算
-        int charaPositionIndex = (int)(character.position.z / StageClipSize);
+        int charaPositionIndex = (int)(player.position.z / StageClipSize);
 
         // 次のステージチップに入ったらステージの更新処理を行う
         if(charaPositionIndex + preInstantiate > currentClipIndex)
@@ -81,10 +81,7 @@ public class StageGenerator : MonoBehaviour
     {
         int nextStageClip = Random.Range(0, stageChips.Length);
 
-        GameObject stageObject = (GameObject)Instantiate(
-            stageChips[nextStageClip],
-            new Vector3(0, 0, chipIndex * StageClipSize),
-            Quaternion.identity);
+        GameObject stageObject = (GameObject)Instantiate(stageChips[nextStageClip],new Vector3(0, 0, chipIndex * StageClipSize),Quaternion.identity);
 
         return stageObject;
     }

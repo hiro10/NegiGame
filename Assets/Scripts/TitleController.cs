@@ -11,7 +11,7 @@ public class TitleController : MonoBehaviour
 
     private void Start()
     {
-        hightScoreText.text = "HIGHT SCORE :" + PlayerPrefs.GetInt("HeightScore") + "m";
+        hightScoreText.text = "HIGHT SCORE :" + PlayerPrefs.GetInt("HightScore") + "m";
     }
     public void OnStartButtonClick()
     {
